@@ -6,7 +6,6 @@ import {
   TouchableOpacity,
   TextInput,
   KeyboardAvoidingView,
-  Platform,
 } from "react-native";
 import { useCart } from "../hooks/useCart";
 import { useTheme } from "../hooks/useTheme";
@@ -246,7 +245,7 @@ export function CartScreen() {
                     <Text
                       className={`text-center font-semibold ${isDark ? "text-emerald-400" : "text-emerald-600"}`}
                     >
-                      ✓ Voucher "{voucherCode}" applied! (10% off)
+                      ✓ "{voucherCode}" applied! (10% off)
                     </Text>
                   </View>
                 ) : (

@@ -76,7 +76,7 @@ function cartReducer(state: CartState, action: CartAction): CartState {
       return {
         ...state,
         items: updatedItems,
-        lastAddedItem: state.items.find((i) => i.id === productId) || null,
+        lastRemovedItem: null,
       };
     }
 
@@ -100,6 +100,8 @@ function cartReducer(state: CartState, action: CartAction): CartState {
       return {
         ...state,
         items: updatedItems,
+        lastAddedItem: null,
+        lastRemovedItem: null,
       };
     }
 
@@ -163,7 +165,7 @@ export function CartProvider({ children }: CartProviderProps) {
 
   const applyVoucher = (code: string): boolean => {
     const normalizedCode = code.toLowerCase();
-    if (normalizedCode === "DISCOUNT10") {
+    if (normalizedCode === "discount10") {
       dispatch({ type: "APPLY_VOUCHER", payload: normalizedCode });
       return true;
     }
