@@ -65,12 +65,13 @@ export function CartScreen() {
   return (
     <KeyboardAvoidingView
       className={`flex-1 ${isDark ? "bg-dark-bg" : "bg-amber-50"}`}
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      behavior="height"
       keyboardVerticalOffset={0}
     >
       <ScrollView
         className={`flex-1 ${isDark ? "bg-dark-bg" : "bg-amber-50"}`}
         keyboardShouldPersistTaps="handled"
+        contentContainerStyle={{ paddingBottom: 20 }}
       >
         <View className="p-6">
           <View className="mb-6 flex-row items-center justify-between">
