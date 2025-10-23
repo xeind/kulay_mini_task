@@ -14,8 +14,21 @@ export interface CartContextType {
   addItem: (product: Product) => void;
   removeItem: (productId: string) => void;
   clearCart: () => void;
+  incrementQuantity: (productId: string) => void;
+  decrementQuantity: (productId: string) => void;
   total: number;
   itemCount: number;
   lastAddedItem: Product | null;
   lastRemovedItem: Product | null;
+  applyVoucher: (code: string) => boolean;
+  discount: number;
+  voucherCode: string | null;
+  finalTotal: number;
+}
+
+export type Theme = "light" | "dark";
+
+export interface ThemeContextType {
+  theme: Theme;
+  toggleTheme: () => void;
 }

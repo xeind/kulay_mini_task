@@ -4,18 +4,25 @@ import { CartItem, Product, CartContextType } from "../types";
 type CartAction =
   | { type: "ADD_ITEM"; payload: Product }
   | { type: "REMOVE_ITEM"; payload: string }
-  | { type: "CLEAR_CART" };
+  | { type: "INCREMENT_QUANTITY"; payload: string }
+  | { type: "DECREMENT_QUANTITY"; payload: string }
+  | { type: "CLEAR_CART" }
+  | { type: "APPLY_VOUCHER"; payload: string };
 
 interface CartState {
   items: CartItem[];
   lastAddedItem: Product | null;
   lastRemovedItem: Product | null;
+  voucherCode: string | null;
+  discount: number;
 }
 
 const initialState: CartState = {
   items: [],
   lastAddedItem: null,
   lastRemovedItem: null,
+  voucherCode: null,
+  discount: 0,
 };
 
 function cartReducer(state: CartState, action: CartAction): CartState {
@@ -33,6 +40,7 @@ function cartReducer(state: CartState, action: CartAction): CartState {
           quantity: updatedItems[existingItemIndex].quantity + 1,
         };
         return {
+          ...state,
           items: updatedItems,
           lastAddedItem: product,
           lastRemovedItem: null,
@@ -41,6 +49,7 @@ function cartReducer(state: CartState, action: CartAction): CartState {
 
       const newItem: CartItem = { ...product, quantity: 1 };
       return {
+        ...state,
         items: [...state.items, newItem],
         lastAddedItem: product,
         lastRemovedItem: null,
@@ -51,14 +60,69 @@ function cartReducer(state: CartState, action: CartAction): CartState {
       const productId = action.payload;
       const removedItem = state.items.find((item) => item.id === productId);
       return {
+        ...state,
         items: state.items.filter((item) => item.id !== productId),
         lastAddedItem: null,
         lastRemovedItem: removedItem || null,
       };
     }
 
+    case "INCREMENT_QUANTITY": {
+      const productId = action.payload;
+      const updatedItems = state.items.map((item) =>
+        item.id === productId ? { ...item, quantity: item.quantity + 1 } : item,
+      );
+
+      return {
+        ...state,
+        items: updatedItems,
+        lastAddedItem: state.items.find((i) => i.id === productId) || null,
+      };
+    }
+
+    case "DECREMENT_QUANTITY": {
+      const productId = action.payload;
+      const item = state.items.find((i) => i.id === productId);
+
+      if (item && item.quantity === 1) {
+        return {
+          ...state,
+          items: state.items.filter((i) => i.id !== productId),
+          lastAddedItem: null,
+          lastRemovedItem: item,
+        };
+      }
+
+      const updatedItems = state.items.map((item) =>
+        item.id === productId ? { ...item, quantity: item.quantity - 1 } : item,
+      );
+
+      return {
+        ...state,
+        items: updatedItems,
+      };
+    }
+
     case "CLEAR_CART": {
-      return { items: [], lastAddedItem: null, lastRemovedItem: null };
+      return {
+        items: [],
+        lastAddedItem: null,
+        lastRemovedItem: null,
+        voucherCode: null,
+        discount: 0,
+      };
+    }
+
+    case "APPLY_VOUCHER": {
+      const code = action.payload.toLowerCase();
+      if (code === "discount10") {
+        return {
+          ...state,
+          voucherCode: code,
+          discount: 0.1,
+        };
+      }
+      return state;
     }
 
     default:
@@ -89,11 +153,32 @@ export function CartProvider({ children }: CartProviderProps) {
     dispatch({ type: "CLEAR_CART" });
   };
 
+  const incrementQuantity = (productId: string) => {
+    dispatch({ type: "INCREMENT_QUANTITY", payload: productId });
+  };
+
+  const decrementQuantity = (productId: string) => {
+    dispatch({ type: "DECREMENT_QUANTITY", payload: productId });
+  };
+
+  const applyVoucher = (code: string): boolean => {
+    const normalizedCode = code.toLowerCase();
+    if (normalizedCode === "DISCOUNT10") {
+      dispatch({ type: "APPLY_VOUCHER", payload: normalizedCode });
+      return true;
+    }
+    return false;
+  };
+
   const total = useMemo(() => {
     return state.items.reduce((sum, item) => {
       return sum + item.price * item.quantity;
     }, 0);
   }, [state.items]);
+
+  const finalTotal = useMemo(() => {
+    return total * (1 - state.discount);
+  }, [total, state.discount]);
 
   const itemCount = useMemo(() => {
     return state.items.reduce((count, item) => {
@@ -110,6 +195,12 @@ export function CartProvider({ children }: CartProviderProps) {
     itemCount,
     lastAddedItem: state.lastAddedItem,
     lastRemovedItem: state.lastRemovedItem,
+    incrementQuantity,
+    decrementQuantity,
+    applyVoucher,
+    discount: state.discount,
+    voucherCode: state.voucherCode,
+    finalTotal,
   };
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
