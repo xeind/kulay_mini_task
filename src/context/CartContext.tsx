@@ -8,10 +8,14 @@ type CartAction =
 
 interface CartState {
   items: CartItem[];
+  lastAddedItem: Product | null;
+  lastRemovedItem: Product | null;
 }
 
 const initialState: CartState = {
   items: [],
+  lastAddedItem: null,
+  lastRemovedItem: null,
 };
 
 function cartReducer(state: CartState, action: CartAction): CartState {
@@ -28,22 +32,33 @@ function cartReducer(state: CartState, action: CartAction): CartState {
           ...updatedItems[existingItemIndex],
           quantity: updatedItems[existingItemIndex].quantity + 1,
         };
-        return { items: updatedItems };
+        return {
+          items: updatedItems,
+          lastAddedItem: product,
+          lastRemovedItem: null,
+        };
       }
 
       const newItem: CartItem = { ...product, quantity: 1 };
-      return { items: [...state.items, newItem] };
+      return {
+        items: [...state.items, newItem],
+        lastAddedItem: product,
+        lastRemovedItem: null,
+      };
     }
 
     case "REMOVE_ITEM": {
       const productId = action.payload;
+      const removedItem = state.items.find((item) => item.id === productId);
       return {
         items: state.items.filter((item) => item.id !== productId),
+        lastAddedItem: null,
+        lastRemovedItem: removedItem || null,
       };
     }
 
     case "CLEAR_CART": {
-      return { items: [] };
+      return { items: [], lastAddedItem: null, lastRemovedItem: null };
     }
 
     default:
@@ -93,6 +108,8 @@ export function CartProvider({ children }: CartProviderProps) {
     clearCart,
     total,
     itemCount,
+    lastAddedItem: state.lastAddedItem,
+    lastRemovedItem: state.lastRemovedItem,
   };
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;

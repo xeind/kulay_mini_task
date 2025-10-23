@@ -5,9 +5,46 @@ import { CartProvider } from "./src/context/CartContext";
 import { useCart } from "./src/hooks/useCart";
 import { PRODUCTS } from "./src/data/products";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useEffect } from "react";
+import Toast from "react-native-toast-message";
 
 function CartTestScreen() {
-  const { items, addItem, removeItem, clearCart, total, itemCount } = useCart();
+  const {
+    items,
+    addItem,
+    removeItem,
+    clearCart,
+    total,
+    itemCount,
+    lastAddedItem,
+    lastRemovedItem,
+  } = useCart();
+
+  useEffect(() => {
+    if (lastAddedItem) {
+      Toast.show({
+        type: "success",
+        text1: "Added to Cart!",
+        text2: lastAddedItem.name,
+        position: "bottom",
+        visibilityTime: 2000,
+        bottomOffset: 140,
+      });
+    }
+  }, [lastAddedItem]);
+
+  useEffect(() => {
+    if (lastRemovedItem) {
+      Toast.show({
+        type: "error",
+        text1: "Removed from Cart",
+        text2: lastRemovedItem.name,
+        position: "bottom",
+        visibilityTime: 2000,
+        bottomOffset: 140,
+      });
+    }
+  });
 
   return (
     <View className="flex-1 bg-white">
@@ -112,6 +149,7 @@ export default function App() {
       <CartProvider>
         <CartTestScreen />
       </CartProvider>
+      <Toast />
     </SafeAreaView>
   );
 }

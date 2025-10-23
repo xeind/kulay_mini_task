@@ -1,5 +1,25 @@
 # Learn more https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files
 
+# Environment variables (all patterns)
+.env
+.env.*
+
+package-lock.json
+
+*.apk
+*.aab
+*.keystore
+android/keystores/
+key.properties
+.gradle/
+
+google-services.json
+GoogleService-Info.plist
+
+credentials.json
+
+bun.lockb
+
 # dependencies
 node_modules/
 

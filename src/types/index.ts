@@ -16,4 +16,6 @@ export interface CartContextType {
   clearCart: () => void;
   total: number;
   itemCount: number;
+  lastAddedItem: Product | null;
+  lastRemovedItem: Product | null;
 }
